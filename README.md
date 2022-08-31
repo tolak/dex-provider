@@ -2,6 +2,10 @@
 
 A DEX data provider that gives informations like trading pair list and liquidity details of a trading pair.
 
+## Types definitions
+
+Head to [types.ts](./src/types.ts)
+
 ## Supportted DEX[Plan]
 
 - UniswapV2 on Ethereum
