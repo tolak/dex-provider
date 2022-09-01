@@ -32,6 +32,10 @@ export interface Pair {
   reserve0: string
   // Liquidity(balance of pair address) of quote trading token
   reserve1: string
+  // Capacity of token0, represented by USD
+  capcity0: string
+  // Capacity of token1, represented by USD
+  capcity1: string
   // Potential swap fee
   swapFee: Option<string>
   // Potential Dev fee
