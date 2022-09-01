@@ -29,7 +29,14 @@ export interface IBridge {
   getBridgedAsset: (token: IToken) => Option<[Chain, IToken]>
 }
 
-export interface TDex {
+export abstract class DexExtension {
+  abstract fetchPairCount(): Promise<number>
+  abstract fetchPairs(): Promise<IPair[]>
+  abstract fetchLimitedPairs(limit: number): Promise<IPair[]>
+  abstract fetchRangePairs(from: number, to: number): Promise<IPair[]>
+}
+
+export interface IDex {
   // Name of the DEX
   name: string
   // The chain that DEX deployed on
@@ -37,14 +44,14 @@ export interface TDex {
   // Factory contract address or a location(e.g. Pallet location on Polkadot ecosystem),
   // should be used as the only indentification of a Dex
   factory: string
-  // GraphQL indexer api
-  indexer: Option<string>
   // Trading pair list
   pairs: IPair[]
 
   /*********** Methods declaration**********/
   // Return trading pair list that including the specific token
-  getTokenPairs: (token: string) => IPair[]
+  getTokenPairs: (token: IToken) => IPair[]
+  // Return whole token pair list
+  getPairs: () => IPair[]
 }
 
 export interface IPair {
@@ -58,6 +65,10 @@ export interface IPair {
   reserve0: string
   // Liquidity(balance of pair address) of quote trading token
   reserve1: string
+  // Price of token0 represented by USD
+  token0Price: string
+  // Price of token1 represented by USD
+  token1Price: string
   // Capacity of token0, represented by USD
   capcity0: Option<string>
   // Capacity of token1, represented by USD
@@ -68,6 +79,8 @@ export interface IPair {
   devFee: Option<string>
 
   /*********** Methods declaration**********/
+  // Flip the whole trading pair
+  flip(): IPair
   // Perspectively return reserve of trading tokens0, and token1
   getReserves: () => [string, string]
   // Fetch latest reserve data from indexer or blockchain, and return it
