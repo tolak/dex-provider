@@ -2,6 +2,14 @@
 
 A DEX data provider that gives informations like trading pair list and liquidity details of a trading pair.
 
+## Run examples
+
+Issue `yarn build` to build the project, then you can run example by  executing:
+
+```sh
+node examples/<script-name>
+```
+
 ## Types definitions
 
 Head to [types.ts](./src/types.ts)
