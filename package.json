@@ -25,7 +25,9 @@
   },
   "homepage": "https://github.com/tolak/dex-provider#readme",
   "dependencies": {
-    "@polkadot/api": "^9.1.1"
+    "@polkadot/api": "^9.1.1",
+    "graphql": "^16.6.0",
+    "graphql-request": "^5.0.0"
   },
   "devDependencies": {
     "@tsconfig/node16": "^1.0.3",
