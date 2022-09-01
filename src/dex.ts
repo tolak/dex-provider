@@ -1,4 +1,5 @@
 import {gql, GraphQLClient} from 'graphql-request'
+import {Decimal} from 'decimal.js'
 import {Chain, IPair, IDex, IToken, Option, DexExtension} from './types'
 import {Pair} from './pair'
 
@@ -169,11 +170,11 @@ export class Dex<Ex extends DexExtension> implements IDex {
   getTokenPairs(token: IToken): IPair[] {
     const pairs: IPair[] = []
     for (let i = 0; i < this.pairs.length; i++) {
-      if (token.id === this.pairs[i].token0.id) {
+      if (token.id.toLowerCase() === this.pairs[i].token0.id) {
         pairs.push(this.pairs[i])
         continue
       }
-      if (token.id === this.pairs[i].token1.id) {
+      if (token.id.toLowerCase() === this.pairs[i].token1.id.toLowerCase()) {
         // Revert pair
         pairs.push(this.pairs[i].flip())
         continue
@@ -182,7 +183,78 @@ export class Dex<Ex extends DexExtension> implements IDex {
     return pairs
   }
 
+  getPair(token0: IToken, token1: IToken): Option<IPair> {
+    for (let i = 0; i < this.pairs.length; i++) {
+      if (token0.id.toLowerCase() === this.pairs[i].token0.id.toLowerCase()) {
+        if (token1.id.toLowerCase() === this.pairs[i].token0.id.toLowerCase()) {
+          return this.pairs[i]
+        }
+      }
+      if (token1.id.toLowerCase() === this.pairs[i].token0.id.toLowerCase()) {
+        if (token0.id.toLowerCase() === this.pairs[i].token1.id.toLowerCase()) {
+          // Return flipped pair
+          return this.pairs[i].flip()
+        }
+      }
+    }
+    return null
+  }
+
   getPairs(): IPair[] {
     return this.pairs
+  }
+
+  getCapcities(pair: IPair): [Option<string>, Option<string>] {
+    let chainNativeWrap: IToken
+    let chainUSDT: IToken
+    if (this.chain.nativeWrap === null || this.chain.usdt === null)
+      return [null, null]
+    else {
+      chainNativeWrap = this.chain.nativeWrap
+      chainUSDT = this.chain.usdt
+    }
+
+    const nativeWrapUSDTPair = this.getPair(chainNativeWrap, chainUSDT)
+    if (nativeWrapUSDTPair === null) {
+      return [null, null]
+    }
+
+    let token0Capcity: Option<string> = null
+    let token1Capcity: Option<string> = null
+
+    // Calculate capacity of token0
+    if (pair.token0.id.toLowerCase() === chainNativeWrap.id.toLowerCase()) {
+      token0Capcity = new Decimal(nativeWrapUSDTPair.token0Price)
+        .mul(new Decimal(pair.reserve0))
+        .toFixed(6)
+    } else if (pair.token0.id.toLowerCase() === chainUSDT.id.toLowerCase()) {
+      token0Capcity = new Decimal(pair.reserve0).toFixed(6)
+    } else {
+      const token0NativewrapPair = this.getPair(pair.token0, chainNativeWrap)
+      if (token0NativewrapPair !== null) {
+        token0Capcity = new Decimal(token0NativewrapPair.token0Price)
+          .mul(new Decimal(nativeWrapUSDTPair.token0Price))
+          .mul(new Decimal(pair.reserve0))
+          .toFixed(6)
+      }
+    }
+
+    // Calculate capacity of token1
+    if (pair.token1.id.toLowerCase() === chainNativeWrap.id.toLowerCase()) {
+      token1Capcity = new Decimal(nativeWrapUSDTPair.token0Price)
+        .mul(new Decimal(pair.reserve1))
+        .toFixed(6)
+    } else if (pair.token1.id.toLowerCase() === chainUSDT.id.toLowerCase()) {
+      token1Capcity = new Decimal(pair.reserve1).toFixed(6)
+    } else {
+      const token1NativewrapPair = this.getPair(pair.token1, chainNativeWrap)
+      if (token1NativewrapPair !== null) {
+        token1Capcity = new Decimal(token1NativewrapPair.token0Price)
+          .mul(new Decimal(nativeWrapUSDTPair.token0Price))
+          .mul(new Decimal(pair.reserve1))
+          .toFixed(6)
+      }
+    }
+    return [token0Capcity, token1Capcity]
   }
 }

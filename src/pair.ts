@@ -73,9 +73,4 @@ export class Pair implements IPair {
     // TODO: fetch from blockchain or set manually
     return null
   }
-
-  getCapcities(): [Option<string>, Option<string>] {
-    // TODO: fetch from blocckhain
-    return [this.capcity0, this.capcity1]
-  }
 }

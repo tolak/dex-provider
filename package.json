@@ -26,6 +26,8 @@
   "homepage": "https://github.com/tolak/dex-provider#readme",
   "dependencies": {
     "@polkadot/api": "^9.1.1",
+    "@uniswap/sdk": "^3.0.3",
+    "decimal.js": "^10.4.0",
     "graphql": "^16.6.0",
     "graphql-request": "^5.0.0"
   },
