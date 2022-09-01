@@ -52,8 +52,10 @@ export class Bridge implements IBridge {
     // let pair: keyof IBridgePair
     for (let i = 0; i < this.pairs.length; i++) {
       const pair: IBridgePair = this.pairs[i]
-      if (pair.token0 === token) return [this.chain1, pair.token1]
-      if (pair.token1 === token) return [this.chain0, pair.token0]
+      if (pair.token0.id.toLowerCase() === token.id.toLowerCase())
+        return [this.chain1, pair.token1]
+      if (pair.token1.id.toLowerCase() === token.id.toLowerCase())
+        return [this.chain0, pair.token0]
     }
     return null
   }

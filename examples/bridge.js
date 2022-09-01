@@ -1,29 +1,36 @@
 const {Bridge, BridgePair} = require('../dist/index.js')
 
-/********* Test ouput ********/
-// Capacity PHA on this bridge: 10000
-// Capacity kPHA on this bridge: 20000
-// Bridge asset of PHA: [
-//   "Phala",
-//   {
-//     "id": "MultiLocation {parents: 1, interiors: X1(Parachain(2004))}",
-//     "name": "Khala Token",
-//     "symbol": "kPHA",
-//     "decimals": 12
-//   }
-// ]
-// Bridge asset of kPHA: [
-//   "Ethereum",
-//   {
-//     "id": "0xe887376a93bda91ed66d814528d7aeefe59990a5",
-//     "name": "Phala Token",
-//     "symbol": "PHA",
-//     "decimals": 18
-//   }
-// ]
-
 async function main() {
-  let bridge = new Bridge('Ethereum', 'Phala')
+  const Ethereum = {
+    name: 'Ethereum',
+    nativeWrap: {
+      id: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+      name: 'Wrapped Ether',
+      symbol: 'WETH',
+      decimals: 18,
+    },
+    usdt: {
+      id: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+      name: 'Tether USD',
+      symbol: 'USDT',
+      decimals: 6,
+    },
+    usdc: {
+      id: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+      name: 'USD Coin',
+      symbol: 'USDC',
+      decimals: 6,
+    },
+  }
+
+  const Phala = {
+    name: 'Phala',
+    nativeWrap: null,
+    usdt: null,
+    usdc: null,
+  }
+
+  let bridge = new Bridge(Ethereum, Phala)
   let bridgePair = new BridgePair(
     {
       id: '0xe887376a93bda91ed66d814528d7aeefe59990a5',
