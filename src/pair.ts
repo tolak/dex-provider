@@ -47,7 +47,7 @@ export class Pair implements IPair {
       this.reserve1,
       this.reserve0,
       this.token1Price,
-      this.token1Price,
+      this.token0Price,
       this.capcity1,
       this.capcity0,
       this.swapFee,
