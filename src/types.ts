@@ -1,7 +1,12 @@
 export type Option<T> = T | null
 
 // Potentially should use MultiLocation
-export type Chain = string
+export interface Chain {
+  name: string
+  nativeWrap: Option<IToken>
+  usdt: Option<IToken>
+  usdc: Option<IToken>
+}
 
 export interface IBridgePair {
   token0: IToken
@@ -50,8 +55,12 @@ export interface IDex {
   /*********** Methods declaration**********/
   // Return trading pair list that including the specific token
   getTokenPairs: (token: IToken) => IPair[]
+  // Return trading pair by given token pair, return pair according to given sequence
+  getPair(token0: IToken, token1: IToken): Option<IPair>
   // Return whole token pair list
   getPairs: () => IPair[]
+  // Perspectively return capcity of the pair, calculated from local cache
+  getCapcities: (pair: IPair) => [Option<string>, Option<string>]
 }
 
 export interface IPair {
@@ -85,12 +94,10 @@ export interface IPair {
   getReserves: () => [string, string]
   // Fetch latest reserve data from indexer or blockchain, and return it
   updateReserves: () => [string, string]
-  // Perspectively return token prices represented by USD, dynamic fetch&calculate from blockchain or other 3rd parties
+  // Perspectively return token prices represented by another asset, not USD
   getPrices: () => [Option<string>, Option<string>]
   // Return total fee paid according to current trading status, dynamic fetch&calculate from blockchain
   getFee: (token: IToken) => Option<string>
-  // Perspectively return capcity of token0 and token1, dynamic fetch&calculate from blockchain or other 3rd parties
-  getCapcities: () => [Option<string>, Option<string>]
 }
 
 export interface IToken {
