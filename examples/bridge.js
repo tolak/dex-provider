@@ -1,34 +1,41 @@
-const {Bridge, BridgePair} = require('../dist/index.js')
+const {
+  Bridge,
+  BridgePair,
+  EvmChain,
+  SubstrateChain,
+} = require('../dist/index.js')
 
 async function main() {
-  const Ethereum = {
-    name: 'Ethereum',
-    nativeWrap: {
+  const Ethereum = new EvmChain(
+    'Ethereum',
+    'https://mainnet.infura.io/v3/6d61e7957c1c489ea8141e947447405b',
+    {
       id: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
       name: 'Wrapped Ether',
       symbol: 'WETH',
       decimals: 18,
     },
-    usdt: {
+    {
       id: '0xdac17f958d2ee523a2206206994597c13d831ec7',
       name: 'Tether USD',
       symbol: 'USDT',
       decimals: 6,
     },
-    usdc: {
+    {
       id: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
       name: 'USD Coin',
       symbol: 'USDC',
       decimals: 6,
-    },
-  }
+    }
+  )
 
-  const Phala = {
-    name: 'Phala',
-    nativeWrap: null,
-    usdt: null,
-    usdc: null,
-  }
+  const Phala = new SubstrateChain(
+    'Phala',
+    'wss://api.phala.network/ws',
+    null,
+    null,
+    null
+  )
 
   let bridge = new Bridge(Ethereum, Phala)
   let bridgePair = new BridgePair(

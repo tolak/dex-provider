@@ -1,4 +1,4 @@
-import {Chain, IBridge, IBridgePair, IToken, Option} from './types'
+import {IChain, IBridge, IBridgePair, IToken, Option} from './types'
 
 export class BridgePair implements IBridgePair {
   token0: IToken
@@ -21,12 +21,12 @@ export class BridgePair implements IBridgePair {
 }
 
 export class Bridge implements IBridge {
-  chain0: Chain
-  chain1: Chain
+  chain0: IChain
+  chain1: IChain
   pairs: IBridgePair[]
   pairBounding: Map<[IToken, IToken], boolean>
 
-  constructor(chain0: Chain, chain1: Chain) {
+  constructor(chain0: IChain, chain1: IChain) {
     this.chain0 = chain0
     this.chain1 = chain1
     this.pairs = []
@@ -48,7 +48,7 @@ export class Bridge implements IBridge {
   }
 
   // Return corresponding bridged asset for a given asset
-  getBridgedAsset(token: IToken): Option<[Chain, IToken]> {
+  getBridgedAsset(token: IToken): Option<[IChain, IToken]> {
     // let pair: keyof IBridgePair
     for (let i = 0; i < this.pairs.length; i++) {
       const pair: IBridgePair = this.pairs[i]
