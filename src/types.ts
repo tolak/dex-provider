@@ -50,8 +50,6 @@ export interface IDex {
   // Factory contract address or a location(e.g. Pallet location on Polkadot ecosystem),
   // should be used as the only indentification of a Dex
   factory: string
-  // Deploy block number of factory contract
-  startBlock: number
   // Trading pair list
   pairs: IPair[]
 
