@@ -8,6 +8,7 @@ export class Pair implements IPair {
   reserve1: string
   token0Price: string
   token1Price: string
+  volumeUSD: Option<string>
   capcity0: Option<string>
   capcity1: Option<string>
   swapFee: Option<string>
@@ -21,6 +22,7 @@ export class Pair implements IPair {
     reserve1: string,
     token0Price: string,
     token1Price: string,
+    volumeUSD: Option<string>,
     capcity0: Option<string>,
     capcity1: Option<string>,
     swapFee: Option<string>,
@@ -33,6 +35,7 @@ export class Pair implements IPair {
     this.reserve1 = reserve1
     this.token0Price = token0Price
     this.token1Price = token1Price
+    this.volumeUSD = volumeUSD
     this.capcity0 = capcity0
     this.capcity1 = capcity1
     this.swapFee = swapFee
@@ -48,6 +51,7 @@ export class Pair implements IPair {
       this.reserve0,
       this.token1Price,
       this.token0Price,
+      this.volumeUSD,
       this.capcity1,
       this.capcity0,
       this.swapFee,
