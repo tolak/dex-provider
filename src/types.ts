@@ -1,11 +1,13 @@
 export type Option<T> = T | null
 
 // Potentially should use MultiLocation
-export interface Chain {
+export interface IChain {
   name: string
   nativeWrap: Option<IToken>
   usdt: Option<IToken>
   usdc: Option<IToken>
+
+  latestBlock: () => Promise<number>
 }
 
 export interface IBridgePair {
@@ -21,9 +23,9 @@ export interface IBridgePair {
 
 export interface IBridge {
   // Source chain
-  chain0: Chain
+  chain0: IChain
   // Corresponding dest chain
-  chain1: Chain
+  chain1: IChain
   // Crosschain assets pair list
   pairs: IBridgePair[]
 
@@ -31,12 +33,11 @@ export interface IBridge {
   // Add an crosschain asset pair
   addBridgePair: (pair: IBridgePair) => void
   // Return corresponding bridged asset for a given asset
-  getBridgedAsset: (token: IToken) => Option<[Chain, IToken]>
+  getBridgedAsset: (token: IToken) => Option<[IChain, IToken]>
 }
 
 export abstract class DexExtension {
   abstract fetchPairCount(): Promise<number>
-  abstract fetchPairs(): Promise<IPair[]>
   abstract fetchLimitedPairs(limit: number): Promise<IPair[]>
   abstract fetchRangePairs(from: number, to: number): Promise<IPair[]>
 }
@@ -45,10 +46,12 @@ export interface IDex {
   // Name of the DEX
   name: string
   // The chain that DEX deployed on
-  chain: Chain
+  chain: IChain
   // Factory contract address or a location(e.g. Pallet location on Polkadot ecosystem),
   // should be used as the only indentification of a Dex
   factory: string
+  // Deploy block number of factory contract
+  startBlock: number
   // Trading pair list
   pairs: IPair[]
 
@@ -78,6 +81,8 @@ export interface IPair {
   token0Price: string
   // Price of token1 represented by USD
   token1Price: string
+  // Total volume USD
+  volumeUSD: Option<string>
   // Capacity of token0, represented by USD
   capcity0: Option<string>
   // Capacity of token1, represented by USD
