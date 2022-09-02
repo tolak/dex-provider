@@ -38,6 +38,7 @@ export interface IBridge {
 
 export abstract class DexExtension {
   abstract fetchPairCount(): Promise<number>
+  abstract fetchSinglePair(id: string): Promise<IPair>
   abstract fetchLimitedPairs(limit: number): Promise<IPair[]>
   abstract fetchRangePairs(from: number, to: number): Promise<IPair[]>
 }

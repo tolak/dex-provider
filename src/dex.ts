@@ -48,6 +48,68 @@ export class UniswapV2Extension extends DexExtension {
     })
   }
 
+  fetchSinglePair(id: string): Promise<IPair> {
+    return new Promise<IPair>((resolve, reject) => {
+      this.indexer
+        .request(
+          gql`
+            {
+              pairs(where: {id: id}) {
+                id
+                token0 {
+                  id
+                  name
+                  symbol
+                  decimals
+                }
+                token1 {
+                  id
+                  name
+                  symbol
+                  decimals
+                }
+                reserve0
+                reserve1
+                token0Price
+                token1Price
+                volumeUSD
+              }
+            }
+          `
+        )
+        .then((data) => {
+          if (data.pairs?.length > 0) {
+            const raw = data.pairs[0]
+            resolve(
+              new Pair(
+                raw.id,
+                raw.token0,
+                raw.token1,
+                raw.reserve0,
+                raw.reserve1,
+                raw.token0Price,
+                raw.token1Price,
+                raw.volumeUSD,
+                null,
+                null,
+                null,
+                null
+              )
+            )
+          } else {
+            resolve(null)
+          }
+        })
+        .catch((e) => {
+          reject(
+            new Error(
+              'Error getting pairs from blockchain: ' + JSON.stringify(e)
+            )
+          )
+        })
+    })
+  }
+
   fetchLimitedPairs(limit: number): Promise<IPair[]> {
     return new Promise<IPair[]>((resolve, reject) => {
       this.indexer

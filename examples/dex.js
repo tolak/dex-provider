@@ -93,14 +93,14 @@ async function main() {
     Moonbeam,
     '0x68A384D826D3678f78BB9FB1533c7E9577dACc0E',
     new UniswapV2Extension(
-        Moonbeam,
+      Moonbeam,
       'https://api.thegraph.com/subgraphs/name/stellaswap/stella-swap'
     )
   )
   await stellaSwap.initialize()
-//   console.log(
-//     `Pairs on StellaSwap: ${JSON.stringify(stellaSwap.getPairs(), null, 2)}`
-//   )
+  //   console.log(
+  //     `Pairs on StellaSwap: ${JSON.stringify(stellaSwap.getPairs(), null, 2)}`
+  //   )
   console.log(
     `Pairs on StellaSwap contain USDT: ${JSON.stringify(
       stellaSwap.getTokenPairs({
@@ -120,14 +120,14 @@ async function main() {
     Moonbeam,
     '0x985bca32293a7a496300a48081947321177a86fd',
     new UniswapV2Extension(
-        Moonbeam,
+      Moonbeam,
       'https://api.thegraph.com/subgraphs/name/beamswap/beamswap-dex'
     )
   )
   await beamSwap.initialize()
-//   console.log(
-//     `Pairs on BeamSwap: ${JSON.stringify(beamSwap.getPairs(), null, 2)}`
-//   )
+  //   console.log(
+  //     `Pairs on BeamSwap: ${JSON.stringify(beamSwap.getPairs(), null, 2)}`
+  //   )
   console.log(
     `Pairs on BeamSwap contain USDT: ${JSON.stringify(
       beamSwap.getTokenPairs({
