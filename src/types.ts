@@ -61,7 +61,7 @@ export interface IDex {
   // Return whole token pair list
   getPairs: () => IPair[]
   // Perspectively return capcity of the pair, calculated from local cache
-  getCapcities: (pair: IPair) => [Option<string>, Option<string>]
+  getCapcities: (pair: IPair) => Option<string>
 }
 
 export interface IPair {

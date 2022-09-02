@@ -1,14 +1,18 @@
 import {gql, GraphQLClient} from 'graphql-request'
 import {Decimal} from 'decimal.js'
-import {Chain, IPair, IDex, IToken, Option, DexExtension} from './types'
+import {pack, keccak256} from '@ethersproject/solidity'
+import {getCreate2Address} from '@ethersproject/address'
+import {IChain, IPair, IDex, IToken, Option, DexExtension} from './types'
 import {Pair} from './pair'
 
 export class UniswapV2Extension extends DexExtension {
   indexer: GraphQLClient
+  chain: IChain
 
-  constructor(endpoint: string) {
+  constructor(chain: IChain, endpoint: string) {
     super()
 
+    this.chain = chain
     this.indexer = new GraphQLClient(endpoint, {
       timeout: 300000,
     })
@@ -44,19 +48,13 @@ export class UniswapV2Extension extends DexExtension {
     })
   }
 
-  fetchPairs(): Promise<IPair[]> {
-    return new Promise<IPair[]>((resolve, reject) => {
-      reject(new Error('Unimplemented'))
-    })
-  }
-
   fetchLimitedPairs(limit: number): Promise<IPair[]> {
     return new Promise<IPair[]>((resolve, reject) => {
       this.indexer
         .request(
           gql`
                 {
-                    pairs (first: ${limit}, orderBy: createdAtTimestamp, orderDirection: desc) {
+                    pairs (first: ${limit}, orderBy: volumeUSD, orderDirection: desc) {
                         id
                         token0 {
                             id
@@ -74,6 +72,7 @@ export class UniswapV2Extension extends DexExtension {
                         reserve1
                         token0Price
                         token1Price
+                        volumeUSD
                     }
                 }
                 `
@@ -89,6 +88,7 @@ export class UniswapV2Extension extends DexExtension {
                 raw.reserve1,
                 raw.token0Price,
                 raw.token1Price,
+                raw.volumeUSD,
                 null,
                 null,
                 null,
@@ -110,22 +110,81 @@ export class UniswapV2Extension extends DexExtension {
     })
   }
 
+  // Fetch pairs according to creating block number range
   fetchRangePairs(from: number, to: number): Promise<IPair[]> {
     return new Promise<IPair[]>((resolve, reject) => {
-      reject(new Error('Unimplemented'))
+      this.indexer
+        .request(
+          gql`
+                  {
+                      pairs (orderBy: createdAtBlockNumber, orderDirection: asc, where: {createdAtBlockNumber_gte: ${Number(
+                        from
+                      )}, createdAtBlockNumber_lt: ${Number(to)}}) {
+                          id
+                          token0 {
+                              id
+                              name
+                              symbol
+                              decimals
+                          }
+                          token1 {
+                              id
+                              name
+                              symbol
+                              decimals
+                          }
+                          reserve0
+                          reserve1
+                          token0Price
+                          token1Price
+                          volumeUSD
+                      }
+                  }
+                  `
+        )
+        .then((data) => {
+          if (data.pairs?.length > 0) {
+            const pairs = data.pairs.map((raw: any) => {
+              return new Pair(
+                raw.id,
+                raw.token0,
+                raw.token1,
+                raw.reserve0,
+                raw.reserve1,
+                raw.token0Price,
+                raw.token1Price,
+                raw.volumeUSD,
+                null,
+                null,
+                null,
+                null
+              )
+            })
+            resolve(pairs)
+          } else {
+            resolve([])
+          }
+        })
+        .catch((e) => {
+          reject(
+            new Error(
+              'Error getting pairs from blockchain: ' + JSON.stringify(e)
+            )
+          )
+        })
     })
   }
 }
 
 export class Dex<Ex extends DexExtension> implements IDex {
   name: string
-  chain: Chain
+  chain: IChain
   factory: string
   pairs: IPair[]
   pairCount: number
   ex: Ex
 
-  constructor(name: string, chain: Chain, factory: string, ex: Ex) {
+  constructor(name: string, chain: IChain, factory: string, ex: Ex) {
     this.name = name
     this.chain = chain
     this.factory = factory
@@ -135,36 +194,15 @@ export class Dex<Ex extends DexExtension> implements IDex {
   }
 
   // Return promise with pair count
-  initialize(): Promise<number> {
-    return new Promise<number>((resolve, reject) => {
-      this.ex
-        .fetchPairCount()
-        .then((count) => {
-          this.pairCount = count
-          console.info(
-            `Got ${count} trading pairs from ${this.name}, start fetching them...`
-          )
-          // TODO: Instead of fetching whole trading pairs for one time, we divide it to several steps
-          this.ex
-            // Fetch first 100 trading paris
-            .fetchLimitedPairs(200)
-            .then((pairs) => {
-              //   if (pairs.length === count) {
-              this.pairs = pairs
-              console.info(`Dex ${this.name} on ${this.chain} initialized`)
-              resolve(count)
-              //   } else {
-              //     reject(new Error('Broken trading pairs'))
-              //   }
-            })
-            .catch((err) => {
-              reject(err)
-            })
-        })
-        .catch((err) => {
-          reject(err)
-        })
-    })
+  async initialize(): Promise<number> {
+    this.pairCount = await this.ex.fetchPairCount()
+    console.info(
+      `Got ${this.pairCount} trading pairs from ${this.name}, start fetching top 1000 volume USD of them...`
+    )
+
+    this.pairs = await this.ex.fetchLimitedPairs(1000)
+    console.info(`Got ${this.pairs.length} pairs from indexer`)
+    return Promise.resolve(this.pairs.length)
   }
 
   getTokenPairs(token: IToken): IPair[] {
@@ -184,17 +222,23 @@ export class Dex<Ex extends DexExtension> implements IDex {
   }
 
   getPair(token0: IToken, token1: IToken): Option<IPair> {
+    const tokensAddress: [string, string] =
+      token0.id.toLowerCase() < token1.id.toLowerCase()
+        ? [token0.id, token1.id]
+        : [token1.id, token0.id]
+    const pair = getCreate2Address(
+      this.factory,
+      keccak256(['bytes'], [pack(['address', 'address'], tokensAddress)]),
+      '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f'
+    )
+    console.debug(
+      `Computed pair[${token0.name}-${token1.name}] address: ${pair}`
+    )
     for (let i = 0; i < this.pairs.length; i++) {
-      if (token0.id.toLowerCase() === this.pairs[i].token0.id.toLowerCase()) {
-        if (token1.id.toLowerCase() === this.pairs[i].token0.id.toLowerCase()) {
-          return this.pairs[i]
-        }
-      }
-      if (token1.id.toLowerCase() === this.pairs[i].token0.id.toLowerCase()) {
-        if (token0.id.toLowerCase() === this.pairs[i].token1.id.toLowerCase()) {
-          // Return flipped pair
-          return this.pairs[i].flip()
-        }
+      if (pair.toLowerCase() === this.pairs[i].id.toLowerCase()) {
+        return token0.id.toLowerCase() === this.pairs[i].token0.id.toLowerCase()
+          ? this.pairs[i]
+          : this.pairs[i].flip()
       }
     }
     return null
@@ -204,11 +248,10 @@ export class Dex<Ex extends DexExtension> implements IDex {
     return this.pairs
   }
 
-  getCapcities(pair: IPair): [Option<string>, Option<string>] {
+  getCapcities(pair: IPair): Option<string> {
     let chainNativeWrap: IToken
     let chainUSDT: IToken
-    if (this.chain.nativeWrap === null || this.chain.usdt === null)
-      return [null, null]
+    if (this.chain.nativeWrap === null || this.chain.usdt === null) return null
     else {
       chainNativeWrap = this.chain.nativeWrap
       chainUSDT = this.chain.usdt
@@ -216,45 +259,34 @@ export class Dex<Ex extends DexExtension> implements IDex {
 
     const nativeWrapUSDTPair = this.getPair(chainNativeWrap, chainUSDT)
     if (nativeWrapUSDTPair === null) {
-      return [null, null]
+      return null
     }
 
-    let token0Capcity: Option<string> = null
-    let token1Capcity: Option<string> = null
-
-    // Calculate capacity of token0
+    let cap: Option<string> = null
+    // Calculate capacity of pair
     if (pair.token0.id.toLowerCase() === chainNativeWrap.id.toLowerCase()) {
-      token0Capcity = new Decimal(nativeWrapUSDTPair.token0Price)
+      cap = new Decimal(nativeWrapUSDTPair.token1Price)
         .mul(new Decimal(pair.reserve0))
         .toFixed(6)
+    } else if (
+      pair.token1.id.toLowerCase() === chainNativeWrap.id.toLowerCase()
+    ) {
+      cap = new Decimal(nativeWrapUSDTPair.token1Price)
+        .mul(new Decimal(pair.reserve1))
+        .toFixed(6)
     } else if (pair.token0.id.toLowerCase() === chainUSDT.id.toLowerCase()) {
-      token0Capcity = new Decimal(pair.reserve0).toFixed(6)
+      cap = new Decimal(pair.reserve0).toFixed(6)
+    } else if (pair.token1.id.toLowerCase() === chainUSDT.id.toLowerCase()) {
+      cap = new Decimal(pair.reserve1).toFixed(6)
     } else {
       const token0NativewrapPair = this.getPair(pair.token0, chainNativeWrap)
       if (token0NativewrapPair !== null) {
-        token0Capcity = new Decimal(token0NativewrapPair.token0Price)
-          .mul(new Decimal(nativeWrapUSDTPair.token0Price))
+        cap = new Decimal(token0NativewrapPair.token1Price)
+          .mul(new Decimal(nativeWrapUSDTPair.token1Price))
           .mul(new Decimal(pair.reserve0))
           .toFixed(6)
       }
     }
-
-    // Calculate capacity of token1
-    if (pair.token1.id.toLowerCase() === chainNativeWrap.id.toLowerCase()) {
-      token1Capcity = new Decimal(nativeWrapUSDTPair.token0Price)
-        .mul(new Decimal(pair.reserve1))
-        .toFixed(6)
-    } else if (pair.token1.id.toLowerCase() === chainUSDT.id.toLowerCase()) {
-      token1Capcity = new Decimal(pair.reserve1).toFixed(6)
-    } else {
-      const token1NativewrapPair = this.getPair(pair.token1, chainNativeWrap)
-      if (token1NativewrapPair !== null) {
-        token1Capcity = new Decimal(token1NativewrapPair.token0Price)
-          .mul(new Decimal(nativeWrapUSDTPair.token0Price))
-          .mul(new Decimal(pair.reserve1))
-          .toFixed(6)
-      }
-    }
-    return [token0Capcity, token1Capcity]
+    return cap
   }
 }
