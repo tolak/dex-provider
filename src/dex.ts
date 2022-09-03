@@ -48,8 +48,8 @@ export class UniswapV2Extension extends DexExtension {
     })
   }
 
-  fetchSinglePair(id: string): Promise<IPair> {
-    return new Promise<IPair>((resolve, reject) => {
+  fetchSinglePair(id: string): Promise<Option<IPair>> {
+    return new Promise<Option<IPair>>((resolve, reject) => {
       this.indexer
         .request(
           gql`
