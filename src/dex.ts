@@ -302,9 +302,9 @@ export class Dex<Ex extends DexExtension> implements IDex {
       keccak256(['bytes'], [pack(['address', 'address'], tokensAddress)]),
       '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f'
     )
-    console.debug(
-      `Computed pair[${token0.name}-${token1.name}] address: ${pair}`
-    )
+    // console.debug(
+    //   `Computed pair[${token0.name}-${token1.name}] address: ${pair}`
+    // )
     for (let i = 0; i < this.pairs.length; i++) {
       if (pair.toLowerCase() === this.pairs[i].id.toLowerCase()) {
         return token0.id.toLowerCase() === this.pairs[i].token0.id.toLowerCase()
