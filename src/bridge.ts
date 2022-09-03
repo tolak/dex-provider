@@ -1,4 +1,5 @@
 import {IChain, IBridge, IBridgePair, IToken, Option} from './types'
+import {sha256} from '@ethersproject/solidity'
 
 export class BridgePair implements IBridgePair {
   token0: IToken
@@ -24,27 +25,25 @@ export class Bridge implements IBridge {
   chain0: IChain
   chain1: IChain
   pairs: IBridgePair[]
-  pairBounding: Map<[IToken, IToken], boolean>
+  pairBounding: Map<string, boolean>
 
   constructor(chain0: IChain, chain1: IChain) {
     this.chain0 = chain0
     this.chain1 = chain1
     this.pairs = []
-    this.pairBounding = new Map<[IToken, IToken], boolean>()
+    this.pairBounding = new Map<string, boolean>()
   }
 
   addBridgePair(pair: IBridgePair) {
-    if (
-      this.pairBounding.has([pair.token0, pair.token1]) ||
-      this.pairBounding.has([pair.token1, pair.token0])
-    ) {
+    const id = this.pairId(pair)
+    if (this.pairBounding.get(id)) {
       throw new Error('Pair already exist')
     }
     this.pairs.push(pair)
     // Two way bouding
     // FIXME: not working
-    this.pairBounding.set([pair.token0, pair.token1], true)
-    this.pairBounding.set([pair.token1, pair.token0], true)
+    this.pairBounding.set(id, true)
+    console.log(`Adding new pair with id: ${id}`)
   }
 
   // Return corresponding bridged asset for a given asset
@@ -58,5 +57,14 @@ export class Bridge implements IBridge {
         return [this.chain0, pair.token0]
     }
     return null
+  }
+
+  pairId(pair: IBridgePair): string {
+    const tokensAddress: string =
+      pair.token0.id.toLowerCase() < pair.token1.id.toLowerCase()
+        ? pair.token0.id + pair.token1.id
+        : pair.token1.id + pair.token0.id
+
+    return sha256(['string'], [tokensAddress])
   }
 }
