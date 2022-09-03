@@ -22,6 +22,12 @@ export interface IBridgePair {
   getToken1Capcity: () => Option<string>
 }
 
+export interface BridgeJSON {
+  chain0: string
+  chain1: string
+  tokens: string[]
+}
+
 export interface IBridge {
   // Source chain
   chain0: IChain
@@ -35,6 +41,8 @@ export interface IBridge {
   addBridgePair: (pair: IBridgePair) => void
   // Return corresponding bridged asset for a given asset
   getBridgedAsset: (token: IToken) => Option<[IChain, IToken]>
+  // Return all infomation as a JSON object
+  toJSON(): BridgeJSON
 }
 
 export abstract class DexExtension {

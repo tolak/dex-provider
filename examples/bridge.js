@@ -38,7 +38,7 @@ async function main() {
   )
 
   let bridge = new Bridge(Ethereum, Phala)
-  let bridgePair = new BridgePair(
+  let bridgePair0 = new BridgePair(
     {
       id: '0xe887376a93bda91ed66d814528d7aeefe59990a5',
       name: 'Phala Token',
@@ -52,25 +52,43 @@ async function main() {
       decimals: 12,
     }
   )
-  bridge.addBridgePair(bridgePair)
+  bridge.addBridgePair(bridgePair0)
 
-  console.log(`Capacity PHA on this bridge: ${bridgePair.getToken0Capcity()}`)
-  console.log(`Capacity kPHA on this bridge: ${bridgePair.getToken1Capcity()}`)
+  let bridgePair1 = new BridgePair(
+    {
+      id: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+      name: 'Tether USDT',
+      symbol: 'USDT',
+      decimals: 6,
+    },
+    {
+      id: 'MultiLocation {parents: 1, interiors: X3(Parachain(2004), GeneralKey(cb), GeneralKey(0xdac17f958d2ee523a2206206994597c13d831ec7))}',
+      name: 'Tether USDT',
+      symbol: 'cbUSDT',
+      decimals: 6,
+    }
+  )
+  bridge.addBridgePair(bridgePair1)
+
+  console.log(`Capacity PHA on this bridge: ${bridgePair0.getToken0Capcity()}`)
+  console.log(`Capacity kPHA on this bridge: ${bridgePair0.getToken1Capcity()}`)
 
   console.log(
     `Bridge asset of PHA: ${JSON.stringify(
-      bridge.getBridgedAsset(bridgePair.token0),
+      bridge.getBridgedAsset(bridgePair0.token0),
       null,
       2
     )}`
   )
   console.log(
     `Bridge asset of kPHA: ${JSON.stringify(
-      bridge.getBridgedAsset(bridgePair.token1),
+      bridge.getBridgedAsset(bridgePair0.token1),
       null,
       2
     )}`
   )
+
+  console.log(`Dump bridge to json: ${JSON.stringify(bridge.toJSON(), null, 2)}`)
 }
 
 main()

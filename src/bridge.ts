@@ -1,4 +1,4 @@
-import {IChain, IBridge, IBridgePair, IToken, Option} from './types'
+import {IChain, IBridge, BridgeJSON, IBridgePair, IToken, Option} from './types'
 import {sha256} from '@ethersproject/solidity'
 
 export class BridgePair implements IBridgePair {
@@ -66,5 +66,18 @@ export class Bridge implements IBridge {
         return [this.chain0, pair.token0]
     }
     return null
+  }
+
+  toJSON(): BridgeJSON {
+    const tokens: string[] = []
+    for (const pair of this.pairs) {
+      // By default we treat token0 as reserved asset, token1 as as corresponding peg asset
+      tokens.push(pair.token0.symbol)
+    }
+    return {
+      chain0: this.chain0.name,
+      chain1: this.chain1.name,
+      tokens: tokens,
+    }
   }
 }
