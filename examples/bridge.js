@@ -88,7 +88,9 @@ async function main() {
     )}`
   )
 
-  console.log(`Dump bridge to json: ${JSON.stringify(bridge.toJSON(), null, 2)}`)
+  console.log(
+    `Dump bridge to json: ${JSON.stringify(bridge.toJSON(), null, 2)}`
+  )
 }
 
 main()

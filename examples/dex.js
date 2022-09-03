@@ -140,6 +140,10 @@ async function main() {
       2
     )}`
   )
+
+  console.log(
+    `Dump to beam info to JSON: ${JSON.stringify(beamSwap.toJSON(), null, 2)}`
+  )
 }
 
 main()

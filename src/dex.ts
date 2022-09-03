@@ -2,7 +2,16 @@ import {gql, GraphQLClient} from 'graphql-request'
 import {Decimal} from 'decimal.js'
 import {pack, keccak256} from '@ethersproject/solidity'
 import {getCreate2Address} from '@ethersproject/address'
-import {IChain, IPair, IDex, IToken, Option, DexExtension} from './types'
+import {
+  DexJSON,
+  PairJSON,
+  IChain,
+  IPair,
+  IDex,
+  IToken,
+  Option,
+  DexExtension,
+} from './types'
 import {Pair} from './pair'
 
 export class UniswapV2Extension extends DexExtension {
@@ -350,5 +359,25 @@ export class Dex<Ex extends DexExtension> implements IDex {
       }
     }
     return cap
+  }
+
+  toJSON(): DexJSON {
+    const pairs: PairJSON[] = []
+    for (const pair of this.pairs) {
+      pairs.push({
+        token0: pair.token0.symbol,
+        token0Id: pair.token0.id,
+        token1: pair.token1.symbol,
+        token1Id: pair.token1.id,
+        cap: Number(this.getCapcities(pair)),
+        rate: Number(pair.token1Price),
+        dex: this.name,
+      })
+    }
+
+    return {
+      chain: this.name,
+      pairs: pairs,
+    }
   }
 }

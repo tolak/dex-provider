@@ -52,6 +52,28 @@ export abstract class DexExtension {
   abstract fetchRangePairs(from: number, to: number): Promise<IPair[]>
 }
 
+export interface PairJSON {
+  // token0 symbol
+  token0: string
+  // token0 address or other type of indentity
+  token0Id: string
+  // token1 symbol
+  token1: string
+  // token1 address or other type of indentity
+  token1Id: string
+  // Capcity of the pair in the DEX
+  cap: number
+  // Trading rate calculated based on result of (reserve1/reserve0)
+  rate: number
+  // DEX name that pair inside
+  dex: string
+}
+
+export interface DexJSON {
+  chain: string
+  pairs: PairJSON[]
+}
+
 export interface IDex {
   // Name of the DEX
   name: string
@@ -72,6 +94,8 @@ export interface IDex {
   getPairs: () => IPair[]
   // Perspectively return capcity of the pair, calculated from local cache
   getCapcities: (pair: IPair) => Option<string>
+  // Return all infomation as a JSON object
+  toJSON(): DexJSON
 }
 
 export interface IPair {
