@@ -10,6 +10,15 @@ export class BridgePair implements IBridgePair {
     this.token1 = token1
   }
 
+  id(): string {
+    const concatId: string =
+      this.token0.id.toLowerCase() < this.token1.id.toLowerCase()
+        ? this.token0.id + this.token1.id
+        : this.token1.id + this.token0.id
+
+    return sha256(['string'], [concatId])
+  }
+
   getToken0Capcity(): Option<string> {
     // TODO: calculate by price oracle and onchain data
     return '10000'
@@ -35,7 +44,7 @@ export class Bridge implements IBridge {
   }
 
   addBridgePair(pair: IBridgePair) {
-    const id = this.pairId(pair)
+    const id = pair.id()
     if (this.pairBounding.get(id)) {
       throw new Error('Pair already exist')
     }
@@ -57,14 +66,5 @@ export class Bridge implements IBridge {
         return [this.chain0, pair.token0]
     }
     return null
-  }
-
-  pairId(pair: IBridgePair): string {
-    const tokensAddress: string =
-      pair.token0.id.toLowerCase() < pair.token1.id.toLowerCase()
-        ? pair.token0.id + pair.token1.id
-        : pair.token1.id + pair.token0.id
-
-    return sha256(['string'], [tokensAddress])
   }
 }

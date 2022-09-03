@@ -15,6 +15,7 @@ export interface IBridgePair {
   token1: IToken
 
   /*********** Methods declaration**********/
+  id(): string
   // Return bridge capacity of the given token0
   getToken0Capcity: () => Option<string>
   // Return bridge capacity of the given token1
