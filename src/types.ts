@@ -4,8 +4,7 @@ export type Option<T> = T | null
 export interface IChain {
   name: string
   nativeWrap: Option<IToken>
-  usdt: Option<IToken>
-  usdc: Option<IToken>
+  stableCoin: Option<IToken>
 
   latestBlock: () => Promise<number>
 }

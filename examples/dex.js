@@ -15,12 +15,6 @@ async function main() {
       name: 'Tether USD',
       symbol: 'USDT',
       decimals: 6,
-    },
-    {
-      id: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-      name: 'USD Coin',
-      symbol: 'USDC',
-      decimals: 6,
     }
   )
 
@@ -32,12 +26,6 @@ async function main() {
       name: 'Wrapped GLMR',
       symbol: 'WGLMR',
       decimals: 18,
-    },
-    {
-      id: '0xefaeee334f0fd1712f9a8cc375f427d9cdd40d73',
-      name: 'Tether USD',
-      symbol: 'USDT',
-      decimals: 6,
     },
     {
       id: '0x818ec0a7fe18ff94269904fced6ae3dae6d6dc0b',
@@ -59,18 +47,18 @@ async function main() {
   )
   await uniSwap.initialize()
 
-  //   console.log(
-  //     `Pairs on UniswapV2: ${JSON.stringify(uniSwap.getPairs(), null, 2)}`
-  //   )
-  //   let usdtPairs = uniSwap.getTokenPairs({
-  //     id: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-  //     name: 'Tether USD',
-  //     symbol: 'USDT',
-  //     decimals: 6,
-  //   })
-  //   console.log(
-  //     `Pairs on UniswapV2 contain USDT: ${JSON.stringify(usdtPairs, null, 2)}`
-  //   )
+  console.log(
+    `Pairs on UniswapV2: ${JSON.stringify(uniSwap.getPairs(), null, 2)}`
+  )
+  let usdtPairs = uniSwap.getTokenPairs({
+    id: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+    name: 'Tether USD',
+    symbol: 'USDT',
+    decimals: 6,
+  })
+  console.log(
+    `Pairs on UniswapV2 contain USDT: ${JSON.stringify(usdtPairs, null, 2)}`
+  )
 
   // We know we got PHA trading pair in advance
   let phaPairs = uniSwap.getTokenPairs({
@@ -102,11 +90,11 @@ async function main() {
   //     `Pairs on StellaSwap: ${JSON.stringify(stellaSwap.getPairs(), null, 2)}`
   //   )
   console.log(
-    `Pairs on StellaSwap contain USDT: ${JSON.stringify(
+    `Pairs on StellaSwap contain USDC: ${JSON.stringify(
       stellaSwap.getTokenPairs({
-        id: '0xefaeee334f0fd1712f9a8cc375f427d9cdd40d73',
-        name: 'Tether USD',
-        symbol: 'USDT',
+        id: '0x818ec0a7fe18ff94269904fced6ae3dae6d6dc0b',
+        name: 'USD Coin',
+        symbol: 'USDC',
         decimals: 6,
       }),
       null,
@@ -129,11 +117,11 @@ async function main() {
   //     `Pairs on BeamSwap: ${JSON.stringify(beamSwap.getPairs(), null, 2)}`
   //   )
   console.log(
-    `Pairs on BeamSwap contain USDT: ${JSON.stringify(
+    `Pairs on BeamSwap contain USDC: ${JSON.stringify(
       beamSwap.getTokenPairs({
-        id: '0xefaeee334f0fd1712f9a8cc375f427d9cdd40d73',
-        name: 'Tether USD',
-        symbol: 'USDT',
+        id: '0x818ec0a7fe18ff94269904fced6ae3dae6d6dc0b',
+        name: 'USD Coin',
+        symbol: 'USDC',
         decimals: 6,
       }),
       null,

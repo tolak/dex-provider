@@ -337,10 +337,11 @@ export class Dex<Ex extends DexExtension> implements IDex {
   getCapcities(pair: IPair): Option<string> {
     let chainNativeWrap: IToken
     let chainUSDT: IToken
-    if (this.chain.nativeWrap === null || this.chain.usdt === null) return null
+    if (this.chain.nativeWrap === null || this.chain.stableCoin === null)
+      return null
     else {
       chainNativeWrap = this.chain.nativeWrap
-      chainUSDT = this.chain.usdt
+      chainUSDT = this.chain.stableCoin
     }
 
     const nativeWrapUSDTPair = this.getPair(chainNativeWrap, chainUSDT)

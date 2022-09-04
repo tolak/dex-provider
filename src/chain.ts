@@ -6,21 +6,18 @@ export class EvmChain implements IChain {
   name: string
   provider: ethers.providers.JsonRpcProvider
   nativeWrap: Option<IToken>
-  usdt: Option<IToken>
-  usdc: Option<IToken>
+  stableCoin: Option<IToken>
 
   constructor(
     name: string,
     rpc: string,
     nativeWrap: Option<IToken>,
-    usdt: Option<IToken>,
-    usdc: Option<IToken>
+    stableCoin: Option<IToken>
   ) {
     this.name = name
     this.provider = new ethers.providers.JsonRpcProvider(rpc)
     this.nativeWrap = nativeWrap
-    this.usdt = usdt
-    this.usdc = usdc
+    this.stableCoin = stableCoin
   }
 
   latestBlock(): Promise<number> {
@@ -39,21 +36,18 @@ export class SubstrateChain implements IChain {
   name: string
   provider: WsProvider
   nativeWrap: Option<IToken>
-  usdt: Option<IToken>
-  usdc: Option<IToken>
+  stableCoin: Option<IToken>
 
   constructor(
     name: string,
     rpc: string,
     nativeWrap: Option<IToken>,
-    usdt: Option<IToken>,
-    usdc: Option<IToken>
+    stableCoin: Option<IToken>
   ) {
     this.name = name
     this.provider = new WsProvider(rpc)
     this.nativeWrap = nativeWrap
-    this.usdt = usdt
-    this.usdc = usdc
+    this.stableCoin = stableCoin
   }
 
   latestBlock(): Promise<number> {

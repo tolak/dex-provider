@@ -1,102 +1,96 @@
-const fs = require('fs');
-const { ethereumEncode } = require('@polkadot/util-crypto')
-const {Bridge,  BridgePair, Dex, EvmChain, SubstrateChain, UniswapV2Extension} = require('../dist/index.js')
+const fs = require('fs')
+const {ethereumEncode} = require('@polkadot/util-crypto')
+const {
+  Bridge,
+  BridgePair,
+  Dex,
+  EvmChain,
+  SubstrateChain,
+  UniswapV2Extension,
+} = require('../dist/index.js')
 
 const engine = {
-    dexs: [],
-    bridges: [],
+  dexs: [],
+  bridges: [],
 }
 
 const Phala = new SubstrateChain(
-    'Phala',
-    'wss://api.phala.network/ws',
-    null,
-    null,
-    null
-  )
+  'Phala',
+  'wss://api.phala.network/ws',
+  null,
+  null,
+  null
+)
 
 const Ethereum = new EvmChain(
-    'Ethereum',
-    'https://mainnet.infura.io/v3/6d61e7957c1c489ea8141e947447405b',
-    {
-      id: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-      name: 'Wrapped Ether',
-      symbol: 'WETH',
-      decimals: 18,
-    },
-    {
-      id: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-      name: 'Tether USD',
-      symbol: 'USDT',
-      decimals: 6,
-    },
-    {
-      id: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-      name: 'USD Coin',
-      symbol: 'USDC',
-      decimals: 6,
-    }
-  )
+  'Ethereum',
+  'https://mainnet.infura.io/v3/6d61e7957c1c489ea8141e947447405b',
+  {
+    id: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+    name: 'Wrapped Ether',
+    symbol: 'WETH',
+    decimals: 18,
+  },
+  {
+    id: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+    name: 'Tether USD',
+    symbol: 'USDT',
+    decimals: 6,
+  }
+)
 
-  const Moonbeam = new EvmChain(
-    'Moonbeam',
-    'https://rpc.api.moonbeam.network',
-    {
-      id: '0xacc15dc74880c9944775448304b263d191c6077f',
-      name: 'Wrapped GLMR',
-      symbol: 'WGLMR',
-      decimals: 18,
-    },
-    {
-      id: '0xefaeee334f0fd1712f9a8cc375f427d9cdd40d73',
-      name: 'Tether USD',
-      symbol: 'USDT',
-      decimals: 6,
-    },
-    {
-      id: '0x818ec0a7fe18ff94269904fced6ae3dae6d6dc0b',
-      name: 'USD Coin',
-      symbol: 'USDC',
-      decimals: 6,
-    }
-  )
-
+const Moonbeam = new EvmChain(
+  'Moonbeam',
+  'https://rpc.api.moonbeam.network',
+  {
+    id: '0xacc15dc74880c9944775448304b263d191c6077f',
+    name: 'Wrapped GLMR',
+    symbol: 'WGLMR',
+    decimals: 18,
+  },
+  {
+    id: '0x818ec0a7fe18ff94269904fced6ae3dae6d6dc0b',
+    name: 'USD Coin',
+    symbol: 'USDC',
+    decimals: 6,
+  }
+)
 
 async function initializeBridges() {
-      let bridge = new Bridge(Ethereum, Phala)
-      let bridgePair0 = new BridgePair(
-        {
-          id: '0xe887376a93bda91ed66d814528d7aeefe59990a5',
-          name: 'Phala Token',
-          symbol: 'PHA',
-          decimals: 18,
-        },
-        {
-          id: 'MultiLocation {parents: 1, interiors: X1(Parachain(2004))}',
-          name: 'Khala Token',
-          symbol: 'kPHA',
-          decimals: 12,
-        }
-      )
-      bridge.addBridgePair(bridgePair0)
-    
-      let bridgePair1 = new BridgePair(
-        {
-          id: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-          name: 'Tether USDT',
-          symbol: 'USDT',
-          decimals: 6,
-        },
-        {
-          id: 'MultiLocation {parents: 1, interiors: X3(Parachain(2004), GeneralKey(cb), GeneralKey(0xdac17f958d2ee523a2206206994597c13d831ec7))}',
-          name: 'Tether USDT',
-          symbol: 'cbUSDT',
-          decimals: 6,
-        }
-      )
-      bridge.addBridgePair(bridgePair1)
+  let bridge = new Bridge(Ethereum, Phala)
+  let bridgePair0 = new BridgePair(
+    {
+      id: '0xe887376a93bda91ed66d814528d7aeefe59990a5',
+      name: 'Phala Token',
+      symbol: 'PHA',
+      decimals: 18,
+    },
+    {
+      id: 'MultiLocation {parents: 1, interiors: X1(Parachain(2004))}',
+      name: 'Khala Token',
+      symbol: 'kPHA',
+      decimals: 12,
+    }
+  )
+  bridge.addBridgePair(bridgePair0)
 
-      engine.bridges.push(bridge)
+  let bridgePair1 = new BridgePair(
+    {
+      id: '0xdac17f958d2ee523a2206206994597c13d831ec7',
+      name: 'Tether USDT',
+      symbol: 'USDT',
+      decimals: 6,
+    },
+    {
+      id: 'MultiLocation {parents: 1, interiors: X3(Parachain(2004), GeneralKey(cb), GeneralKey(0xdac17f958d2ee523a2206206994597c13d831ec7))}',
+      name: 'Tether USDT',
+      symbol: 'cbUSDT',
+      decimals: 6,
+    }
+  )
+  bridge.addBridgePair(bridgePair1)
+
+  engine.bridges.push(bridge)
 }
 
 async function initializeDexs() {
@@ -141,53 +135,56 @@ async function initializeDexs() {
 }
 
 async function main() {
-    console.log(`Start initialize all bridges...`)
-    await initializeBridges()
-    console.log(`Bridges initialized`)
-    console.log(`Start initialize all dex...`)
-    await initializeDexs()
-    console.log(`✅ DEXs initialized`)
+  console.log(`Start initialize all bridges...`)
+  await initializeBridges()
+  console.log(`Bridges initialized`)
+  console.log(`Start initialize all dex...`)
+  await initializeDexs()
+  console.log(`✅ DEXs initialized`)
 
-    // Now we got a swap engine ready
-    let graph = []
+  // Now we got a swap engine ready
+  let graph = []
 
-    let ethereumPairs = {
-        name: 'Ethereum',
-        pairs: []
-    }
-    let moonbeamPairs = {
-        name: 'Moonbeam',
-        pairs: []
-    }
-    
-    // Travel all DEX pairs
-    console.log(`Start traveling all pairs...`)
-    for (dex of engine.dexs) {
-            // Loopup Ethereum pairs
-        if (dex.chain.name === 'Ethereum') {
-            ethereumPairs.pairs = ethereumPairs.pairs.concat(dex.toJSON().pairs)
-        }
-        // Lookup Moonbeam pairs
-        if (dex.chain.name === 'Moonbeam') {
-            moonbeamPairs.pairs = moonbeamPairs.pairs.concat(dex.toJSON().pairs)
-        }
-    }
-    graph.push(ethereumPairs)
-    graph.push(moonbeamPairs)
-    console.log(`✅ All pairs collected`)
+  let ethereumPairs = {
+    name: 'Ethereum',
+    pairs: [],
+  }
+  let moonbeamPairs = {
+    name: 'Moonbeam',
+    pairs: [],
+  }
 
-    // Travel all bridges
-    console.log(`Start traveling all bridges...`)
-    for (bridge of engine.bridges) {
-        graph.push(bridge.toJSON())
+  // Travel all DEX pairs
+  console.log(`Start traveling all pairs...`)
+  for (let dex of engine.dexs) {
+    // Loopup Ethereum pairs
+    if (dex.chain.name === 'Ethereum') {
+      ethereumPairs.pairs = ethereumPairs.pairs.concat(dex.toJSON().pairs)
     }
-    console.log(`✅ All bridges collected`)
+    // Lookup Moonbeam pairs
+    if (dex.chain.name === 'Moonbeam') {
+      moonbeamPairs.pairs = moonbeamPairs.pairs.concat(dex.toJSON().pairs)
+    }
+  }
+  graph.push(ethereumPairs)
+  graph.push(moonbeamPairs)
+  console.log(`✅ All pairs collected`)
 
-    // Dump to filesystem
-    let fileName = 'graph.json'
-    console.info(`Writing engine informatioin to ${fileName}`);
-    fs.writeFileSync(fileName, JSON.stringify(graph, null, 2), { encoding: 'utf8', flag: 'w'});
-    console.info(`✅ JSON file created`);
+  // Travel all bridges
+  console.log(`Start traveling all bridges...`)
+  for (let bridge of engine.bridges) {
+    graph.push(bridge.toJSON())
+  }
+  console.log(`✅ All bridges collected`)
+
+  // Dump to filesystem
+  let fileName = 'graph.json'
+  console.info(`Writing engine informatioin to ${fileName}`)
+  fs.writeFileSync(fileName, JSON.stringify(graph, null, 2), {
+    encoding: 'utf8',
+    flag: 'w',
+  })
+  console.info(`✅ JSON file created`)
 }
 
 main()
