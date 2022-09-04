@@ -1,7 +1,6 @@
 import {gql, GraphQLClient} from 'graphql-request'
 import {Decimal} from 'decimal.js'
-import {pack, keccak256} from '@ethersproject/solidity'
-import {getCreate2Address} from '@ethersproject/address'
+import {sha256} from '@ethersproject/solidity'
 import {
   DexJSON,
   PairJSON,
@@ -254,6 +253,8 @@ export class Dex<Ex extends DexExtension> implements IDex {
   pairs: IPair[]
   pairCount: number
   ex: Ex
+  // Mapping string of concat(token0.id, token1.id) to pair address
+  ids: Map<string, string>
 
   constructor(name: string, chain: IChain, factory: string, ex: Ex) {
     this.name = name
@@ -262,6 +263,17 @@ export class Dex<Ex extends DexExtension> implements IDex {
     this.pairs = []
     this.pairCount = 0
     this.ex = ex
+    this.ids = new Map<string, string>()
+  }
+
+  // Generate key of `ids` map according to given pair token address/indentity
+  generateIdKey(token0: string, token1: string): string {
+    const concatId: string =
+      token0.toLowerCase() < token1.toLowerCase()
+        ? token0 + token1
+        : token1 + token0
+
+    return sha256(['string'], [concatId])
   }
 
   // Return promise with pair count
@@ -271,7 +283,12 @@ export class Dex<Ex extends DexExtension> implements IDex {
       `Got ${this.pairCount} trading pairs from ${this.name}, start fetching top 1000 volume USD of them...`
     )
 
-    this.pairs = await this.ex.fetchLimitedPairs(1000)
+    const pairs = await this.ex.fetchLimitedPairs(1000)
+    pairs.map((pair) => {
+      const key = this.generateIdKey(pair.token0.id, pair.token1.id)
+      this.ids.set(key, pair.id)
+    })
+    this.pairs = pairs
     console.info(`Got ${this.pairs.length} pairs from indexer`)
     return Promise.resolve(this.pairs.length)
   }
@@ -293,26 +310,24 @@ export class Dex<Ex extends DexExtension> implements IDex {
   }
 
   getPair(token0: IToken, token1: IToken): Option<IPair> {
-    const tokensAddress: [string, string] =
-      token0.id.toLowerCase() < token1.id.toLowerCase()
-        ? [token0.id, token1.id]
-        : [token1.id, token0.id]
-    const pair = getCreate2Address(
-      this.factory,
-      keccak256(['bytes'], [pack(['address', 'address'], tokensAddress)]),
-      '0x96e8ac4277198ff8b6f785478aa9a39f403cb768dd02cbee326c3e7da348845f'
-    )
-    // console.debug(
-    //   `Computed pair[${token0.name}-${token1.name}] address: ${pair}`
-    // )
-    for (let i = 0; i < this.pairs.length; i++) {
-      if (pair.toLowerCase() === this.pairs[i].id.toLowerCase()) {
-        return token0.id.toLowerCase() === this.pairs[i].token0.id.toLowerCase()
-          ? this.pairs[i]
-          : this.pairs[i].flip()
+    const id = this.ids.get(this.generateIdKey(token0.id, token1.id))
+    if (id !== undefined) {
+      for (let i = 0; i < this.pairs.length; i++) {
+        if (id.toLowerCase() === this.pairs[i].id.toLowerCase()) {
+          return token0.id.toLowerCase() ===
+            this.pairs[i].token0.id.toLowerCase()
+            ? this.pairs[i]
+            : this.pairs[i].flip()
+        }
       }
+      // Shouldn't be here
+      return null
+    } else {
+      console.debug(
+        `Tring to get pair of token[${token0.name}-${token1.name}], but not found`
+      )
+      return null
     }
-    return null
   }
 
   getPairs(): IPair[] {
