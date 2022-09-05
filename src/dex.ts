@@ -280,10 +280,10 @@ export class Dex<Ex extends DexExtension> implements IDex {
   async initialize(): Promise<number> {
     this.pairCount = await this.ex.fetchPairCount()
     console.info(
-      `Got ${this.pairCount} trading pairs from ${this.name}, start fetching top 1000 volume USD of them...`
+      `Got ${this.pairCount} trading pairs from ${this.name}, start fetching top 20 volume USD of them...`
     )
 
-    const pairs = await this.ex.fetchLimitedPairs(1000)
+    const pairs = await this.ex.fetchLimitedPairs(20)
     pairs.map((pair) => {
       const key = this.generateIdKey(pair.token0.id, pair.token1.id)
       this.ids.set(key, pair.id)
@@ -323,9 +323,9 @@ export class Dex<Ex extends DexExtension> implements IDex {
       // Shouldn't be here
       return null
     } else {
-    //   console.debug(
-    //     `Tring to get pair of token[${token0.name}-${token1.name}], but not found`
-    //   )
+      //   console.debug(
+      //     `Tring to get pair of token[${token0.name}-${token1.name}], but not found`
+      //   )
       return null
     }
   }

@@ -1,5 +1,4 @@
 const fs = require('fs')
-const {ethereumEncode} = require('@polkadot/util-crypto')
 const {
   Bridge,
   BridgePair,
@@ -66,9 +65,9 @@ async function initializeBridges() {
       decimals: 18,
     },
     {
-      id: 'MultiLocation {parents: 1, interiors: X1(Parachain(2004))}',
-      name: 'Khala Token',
-      symbol: 'kPHA',
+      id: 'MultiLocation {parents: 1, interiors: X1(Parachain(2035))}',
+      name: 'Phala Token',
+      symbol: 'PHA',
       decimals: 12,
     }
   )
@@ -82,15 +81,32 @@ async function initializeBridges() {
       decimals: 6,
     },
     {
-      id: 'MultiLocation {parents: 1, interiors: X3(Parachain(2004), GeneralKey(cb), GeneralKey(0xdac17f958d2ee523a2206206994597c13d831ec7))}',
+      id: 'MultiLocation {parents: 1, interiors: X3(Parachain(2035), GeneralKey(cb), GeneralKey(0xdac17f958d2ee523a2206206994597c13d831ec7))}',
       name: 'Tether USDT',
       symbol: 'cbUSDT',
       decimals: 6,
     }
   )
   bridge.addBridgePair(bridgePair1)
-
   engine.bridges.push(bridge)
+
+  let bridge1 = new Bridge(Ethereum, Moonbeam)
+  let bridge1Pair0 = new BridgePair(
+    {
+      id: '0x818ec0a7fe18ff94269904fced6ae3dae6d6dc0b',
+      name: 'USD Coin',
+      symbol: 'USDC',
+      decimals: 6,
+    },
+    {
+      id: '0x8f552a71efe5eefc207bf75485b356a0b3f01ec9',
+      name: 'USD Coin',
+      symbol: 'USDC',
+      decimals: 6,
+    }
+  )
+  bridge1.addBridgePair(bridge1Pair0)
+  engine.bridges.push(bridge1)
 }
 
 async function initializeDexs() {
@@ -143,7 +159,10 @@ async function main() {
   console.log(`✅ DEXs initialized`)
 
   // Now we got a swap engine ready
-  let graph = []
+  let graph = {
+    chains: [],
+    bridges: [],
+  }
 
   let ethereumPairs = {
     name: 'Ethereum',
@@ -166,14 +185,14 @@ async function main() {
       moonbeamPairs.pairs = moonbeamPairs.pairs.concat(dex.toJSON().pairs)
     }
   }
-  graph.push(ethereumPairs)
-  graph.push(moonbeamPairs)
+  graph.chains.push(ethereumPairs)
+  graph.chains.push(moonbeamPairs)
   console.log(`✅ All pairs collected`)
 
   // Travel all bridges
   console.log(`Start traveling all bridges...`)
   for (let bridge of engine.bridges) {
-    graph.push(bridge.toJSON())
+    graph.bridges.push(bridge.toJSON())
   }
   console.log(`✅ All bridges collected`)
 
