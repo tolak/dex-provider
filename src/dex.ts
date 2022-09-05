@@ -323,9 +323,9 @@ export class Dex<Ex extends DexExtension> implements IDex {
       // Shouldn't be here
       return null
     } else {
-      console.debug(
-        `Tring to get pair of token[${token0.name}-${token1.name}], but not found`
-      )
+    //   console.debug(
+    //     `Tring to get pair of token[${token0.name}-${token1.name}], but not found`
+    //   )
       return null
     }
   }

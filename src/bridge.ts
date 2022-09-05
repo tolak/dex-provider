@@ -46,13 +46,13 @@ export class Bridge implements IBridge {
   addBridgePair(pair: IBridgePair) {
     const id = pair.id()
     if (this.pairBounding.get(id)) {
-      throw new Error('Pair already exist')
+      throw new Error('Bridge pair already exist')
     }
     this.pairs.push(pair)
     // Two way bouding
     // FIXME: not working
     this.pairBounding.set(id, true)
-    console.log(`Adding new pair with id: ${id}`)
+    console.log(`Adding new bridge pair with id: ${id}`)
   }
 
   // Return corresponding bridged asset for a given asset
