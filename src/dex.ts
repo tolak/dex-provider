@@ -329,6 +329,24 @@ export class Dex<Ex extends DexExtension> implements IDex {
     return pairs
   }
 
+  updatePair(id: string): Promise<IPair> {
+    return new Promise<IPair>((resolve, reject) => {
+      if (this.pairs.get(id) === undefined) {
+        reject(new Error(`Pair does not exist: ${id}`))
+      }
+      this.ex
+        .fetchSinglePair(id)
+        .then((pair) => {
+          if (pair !== null) {
+            this.pairs.set(id, pair)
+          } else {
+            reject(new Error(`Pair not found on remote: ${id}`))
+          }
+        })
+        .catch((err) => reject(err))
+    })
+  }
+
   getCapcities(pair: IPair): Option<string> {
     let chainNativeWrap: IToken
     let chainUSDT: IToken
