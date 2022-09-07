@@ -276,14 +276,14 @@ export class Dex<Ex extends DexExtension> implements IDex {
     return sha256(['string'], [concatId])
   }
 
-  // Return promise with pair count
-  async initialize(): Promise<number> {
+  // Return promise with pair count, fetch top 200 volume trading pairs from DEX by default
+  async initialize(limit: number = 200): Promise<number> {
     this.pairCount = await this.ex.fetchPairCount()
     console.info(
-      `Got ${this.pairCount} trading pairs from ${this.name}, start fetching top 20 volume USD of them...`
+      `Got ${this.pairCount} trading pairs from ${this.name}, start fetching top ${limit} volume USD of them...`
     )
 
-    const pairs = await this.ex.fetchLimitedPairs(20)
+    const pairs = await this.ex.fetchLimitedPairs(limit)
     pairs.map((pair) => {
       const key = this.generateIdKey(pair.token0.id, pair.token1.id)
       this.ids.set(key, pair.id)

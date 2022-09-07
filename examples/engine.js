@@ -120,7 +120,7 @@ async function initializeDexs() {
       'https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2'
     )
   )
-  await uniSwap.initialize()
+  await uniSwap.initialize(200)
   engine.dexs.push(uniSwap)
 
   // Create StellaSwap instance
@@ -133,7 +133,7 @@ async function initializeDexs() {
       'https://api.thegraph.com/subgraphs/name/stellaswap/stella-swap'
     )
   )
-  await stellaSwap.initialize()
+  await stellaSwap.initialize(100)
   engine.dexs.push(stellaSwap)
 
   // Create BeamSwap instance
@@ -146,7 +146,7 @@ async function initializeDexs() {
       'https://api.thegraph.com/subgraphs/name/beamswap/beamswap-dex'
     )
   )
-  await beamSwap.initialize()
+  await beamSwap.initialize(100)
   engine.dexs.push(beamSwap)
 }
 
