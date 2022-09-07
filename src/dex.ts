@@ -250,8 +250,7 @@ export class Dex<Ex extends DexExtension> implements IDex {
   name: string
   chain: IChain
   factory: string
-  pairs: IPair[]
-  pairCount: number
+  pairs: Map<string, IPair>
   ex: Ex
   // Mapping string of concat(token0.id, token1.id) to pair address
   ids: Map<string, string>
@@ -260,8 +259,7 @@ export class Dex<Ex extends DexExtension> implements IDex {
     this.name = name
     this.chain = chain
     this.factory = factory
-    this.pairs = []
-    this.pairCount = 0
+    this.pairs = new Map<string, IPair>()
     this.ex = ex
     this.ids = new Map<string, string>()
   }
@@ -277,32 +275,32 @@ export class Dex<Ex extends DexExtension> implements IDex {
   }
 
   // Return promise with pair count, fetch top 200 volume trading pairs from DEX by default
-  async initialize(limit: number = 200): Promise<number> {
-    this.pairCount = await this.ex.fetchPairCount()
+  async initialize(limit = 200): Promise<number> {
+    const totalPairs = await this.ex.fetchPairCount()
     console.info(
-      `Got ${this.pairCount} trading pairs from ${this.name}, start fetching top ${limit} volume USD of them...`
+      `There are ${totalPairs} trading pairs founded from ${this.name}, start fetching top ${limit} volume USD of them...`
     )
 
     const pairs = await this.ex.fetchLimitedPairs(limit)
     pairs.map((pair) => {
       const key = this.generateIdKey(pair.token0.id, pair.token1.id)
       this.ids.set(key, pair.id)
+      this.pairs.set(pair.id, pair)
     })
-    this.pairs = pairs
-    console.info(`Got ${this.pairs.length} pairs from indexer`)
-    return Promise.resolve(this.pairs.length)
+    console.info(`Got ${this.pairs.size} pairs from indexer`)
+    return Promise.resolve(this.pairs.size)
   }
 
   getTokenPairs(token: IToken): IPair[] {
     const pairs: IPair[] = []
-    for (let i = 0; i < this.pairs.length; i++) {
-      if (token.id.toLowerCase() === this.pairs[i].token0.id) {
-        pairs.push(this.pairs[i])
+    for (const [pairId, pair] of this.pairs) {
+      if (token.id.toLowerCase() === pair.token0.id) {
+        pairs.push(pair)
         continue
       }
-      if (token.id.toLowerCase() === this.pairs[i].token1.id.toLowerCase()) {
+      if (token.id.toLowerCase() === pair.token1.id.toLowerCase()) {
         // Revert pair
-        pairs.push(this.pairs[i].flip())
+        pairs.push(pair.flip())
         continue
       }
     }
@@ -312,26 +310,23 @@ export class Dex<Ex extends DexExtension> implements IDex {
   getPair(token0: IToken, token1: IToken): Option<IPair> {
     const id = this.ids.get(this.generateIdKey(token0.id, token1.id))
     if (id !== undefined) {
-      for (let i = 0; i < this.pairs.length; i++) {
-        if (id.toLowerCase() === this.pairs[i].id.toLowerCase()) {
-          return token0.id.toLowerCase() ===
-            this.pairs[i].token0.id.toLowerCase()
-            ? this.pairs[i]
-            : this.pairs[i].flip()
-        }
+      const pair = this.pairs.get(id)
+      if (pair !== undefined) {
+        return pair
       }
-      // Shouldn't be here
-      return null
-    } else {
-      //   console.debug(
-      //     `Tring to get pair of token[${token0.name}-${token1.name}], but not found`
-      //   )
-      return null
     }
+    //   console.debug(
+    //     `Tring to get pair of token[${token0.name}-${token1.name}], but not found`
+    //   )
+    return null
   }
 
   getPairs(): IPair[] {
-    return this.pairs
+    const pairs: IPair[] = []
+    for (const [_, pair] of this.pairs) {
+      pairs.push(pair)
+    }
+    return pairs
   }
 
   getCapcities(pair: IPair): Option<string> {
@@ -379,7 +374,7 @@ export class Dex<Ex extends DexExtension> implements IDex {
 
   toJSON(): DexJSON {
     const pairs: PairJSON[] = []
-    for (const pair of this.pairs) {
+    for (const [_, pair] of this.pairs) {
       pairs.push({
         token0: pair.token0.symbol,
         token0Id: pair.token0.id,

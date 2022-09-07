@@ -81,8 +81,8 @@ export interface IDex {
   // Factory contract address or a location(e.g. Pallet location on Polkadot ecosystem),
   // should be used as the only indentification of a Dex
   factory: string
-  // Trading pair list
-  pairs: IPair[]
+  // Trading pair mapping<pairId, Pair>
+  pairs: Map<string, IPair>
 
   /*********** Methods declaration**********/
   // Return trading pair list that including the specific token
