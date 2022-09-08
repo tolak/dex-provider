@@ -1,8 +1,8 @@
 {
   "name": "dex-provider",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "description": "Fetch data like trading pair and liquidity from DEX",
-  "main": "dis/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsup",
