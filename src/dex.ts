@@ -395,8 +395,10 @@ export class Dex<Ex extends DexExtension> implements IDex {
     for (const [_, pair] of this.pairs) {
       pairs.push({
         token0: pair.token0.symbol,
+        reserve0: Number(pair.reserve0),
         token0Id: pair.token0.id,
         token1: pair.token1.symbol,
+        reserve1: Number(pair.reserve1),
         token1Id: pair.token1.id,
         cap: Number(this.getCapcities(pair)),
         rate: Number(pair.token1Price),

@@ -54,10 +54,14 @@ export abstract class DexExtension {
 export interface PairJSON {
   // token0 symbol
   token0: string
+  // token0 reserve on this trading pair
+  reserve0: number
   // token0 address or other type of indentity
   token0Id: string
   // token1 symbol
   token1: string
+  // token1 reserve on this trading pair
+  reserve1: number
   // token1 address or other type of indentity
   token1Id: string
   // Capcity of the pair in the DEX
