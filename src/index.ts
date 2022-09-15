@@ -1,5 +1,13 @@
 import {BridgePair, Bridge} from './bridge'
-import {Dex, UniswapV2Extension} from './dex'
+import {AcalaDexExtension, Dex, UniswapV2Extension} from './dex'
 import {EvmChain, SubstrateChain} from './chain'
 
-export {BridgePair, Bridge, Dex, EvmChain, SubstrateChain, UniswapV2Extension}
+export {
+  AcalaDexExtension,
+  BridgePair,
+  Bridge,
+  Dex,
+  EvmChain,
+  SubstrateChain,
+  UniswapV2Extension,
+}

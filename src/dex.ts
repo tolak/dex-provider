@@ -13,6 +13,191 @@ import {
 } from './types'
 import {Pair} from './pair'
 
+export class AcalaDexExtension extends DexExtension {
+  indexer: GraphQLClient
+  chain: IChain
+
+  constructor(chain: IChain, endpoint: string) {
+    super()
+
+    this.chain = chain
+    this.indexer = new GraphQLClient(endpoint, {
+      timeout: 300000,
+    })
+  }
+
+  fetchPairCount(): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
+      this.indexer
+        .request(
+          gql`
+            {
+              dexes {
+                nodes {
+                  poolCount
+                }
+              }
+            }
+          `
+        )
+        .then((data) => {
+          if (data.dexes.nodes?.length > 0) {
+            resolve(data.dexes.nodes[0].poolCount)
+          } else {
+            reject(new Error('Unknow error'))
+          }
+        })
+        .catch((e) => {
+          reject(
+            new Error(
+              'Error getting Acala pool count from blockchain: ' +
+                JSON.stringify(e)
+            )
+          )
+        })
+    })
+  }
+
+  fetchSinglePair(id: string): Promise<Option<IPair>> {
+    return new Promise<Option<IPair>>((resolve, reject) => {
+      this.indexer
+        .request(
+          gql`
+            {
+              pools(where: {id: id}) {
+                nodes {
+                  id
+                  token0 {
+                    id
+                    name
+                    decimals
+                  }
+                  token1 {
+                    id
+                    name
+                    decimals
+                  }
+                  token0Amount
+                  token1Amount
+                  token0Price
+                  token1Price
+                  tradeVolumeUSD
+                  feeRate
+                }
+              }
+            }
+          `
+        )
+        .then((data) => {
+          if (data.pools.nodes?.length > 0) {
+            const raw = data.pools.nodes[0]
+            // Let's fix the missing fields
+            raw.token0.symbol = raw.token0.name
+            raw.token1.symbol = raw.token1.name
+            resolve(
+              new Pair(
+                raw.id,
+                raw.token0,
+                raw.token1,
+                raw.token0Amount,
+                raw.token1Amount,
+                raw.token0Price,
+                raw.token1Price,
+                raw.tradeVolumeUSD,
+                null,
+                null,
+                raw.feeRate,
+                null
+              )
+            )
+          } else {
+            resolve(null)
+          }
+        })
+        .catch((e) => {
+          reject(
+            new Error(
+              'Error getting Acala pools from blockchain: ' + JSON.stringify(e)
+            )
+          )
+        })
+    })
+  }
+
+  fetchLimitedPairs(limit: number): Promise<IPair[]> {
+    return new Promise<IPair[]>((resolve, reject) => {
+      this.indexer
+        .request(
+          gql`
+            {
+                pools (first: ${limit}, orderBy: TRADE_VOLUME_U_S_D_DESC) {
+                    nodes {
+                        id
+                        token0 {
+                            id
+                            name
+                            decimals
+                        }
+                        token1 {
+                            id
+                            name
+                            decimals
+                        }
+                        token0Amount
+                        token1Amount
+                        token0Price
+                        token1Price
+                        tradeVolumeUSD
+                        feeRate
+                    }
+                }
+            }
+            `
+        )
+        .then((data) => {
+          if (data.pools.nodes?.length > 0) {
+            const pools = data.pools.nodes.map((raw: any) => {
+              // Let's fix the missing fields
+              raw.token0.symbol = raw.token0.name
+              raw.token1.symbol = raw.token1.name
+              return new Pair(
+                raw.id,
+                raw.token0,
+                raw.token1,
+                raw.token0Amount,
+                raw.token1Amount,
+                raw.token0Price,
+                raw.token1Price,
+                raw.tradeVolumeUSD,
+                null,
+                null,
+                raw.feeRate,
+                null
+              )
+            })
+            resolve(pools)
+          } else {
+            resolve([])
+          }
+        })
+        .catch((e) => {
+          reject(
+            new Error(
+              'Error getting Acala pools from blockchain: ' + JSON.stringify(e)
+            )
+          )
+        })
+    })
+  }
+
+  // Fetch pairs according to creating block number range
+  fetchRangePairs(from: number, to: number): Promise<IPair[]> {
+    return new Promise<IPair[]>((resolve, reject) => {
+      reject(new Error('Unimplmented'))
+    })
+  }
+}
+
 export class UniswapV2Extension extends DexExtension {
   indexer: GraphQLClient
   chain: IChain

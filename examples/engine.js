@@ -6,6 +6,7 @@ const {
   EvmChain,
   SubstrateChain,
   UniswapV2Extension,
+  AcalaDexExtension,
 } = require('../dist/index.js')
 
 const engine = {
@@ -53,6 +54,14 @@ const Moonbeam = new EvmChain(
     symbol: 'USDC',
     decimals: 6,
   }
+)
+
+const Karura = new SubstrateChain(
+  'Karura',
+  'wss://karura.api.onfinality.io/public-ws',
+  null,
+  null,
+  null
 )
 
 async function initializeBridges() {
@@ -148,6 +157,16 @@ async function initializeDexs() {
   )
   await beamSwap.initialize(100)
   engine.dexs.push(beamSwap)
+
+  // Create Karura dex instance
+  let karuraSwap = new Dex(
+    'KaruraDex',
+    Karura,
+    null,
+    new AcalaDexExtension(Karura, 'https://api.polkawallet.io/karura-dex-subql')
+  )
+  await karuraSwap.initialize(100)
+  engine.dexs.push(karuraSwap)
 }
 
 async function main() {
@@ -172,6 +191,10 @@ async function main() {
     name: 'Moonbeam',
     pairs: [],
   }
+  let karuraPairs = {
+    name: 'Karura',
+    pairs: [],
+  }
 
   // Travel all DEX pairs
   console.log(`Start traveling all pairs...`)
@@ -184,9 +207,14 @@ async function main() {
     if (dex.chain.name === 'Moonbeam') {
       moonbeamPairs.pairs = moonbeamPairs.pairs.concat(dex.toJSON().pairs)
     }
+    // Lookup Karura pairs
+    if (dex.chain.name === 'Karura') {
+      karuraPairs.pairs = karuraPairs.pairs.concat(dex.toJSON().pairs)
+    }
   }
   graph.chains.push(ethereumPairs)
   graph.chains.push(moonbeamPairs)
+  graph.chains.push(karuraPairs)
   console.log(`✅ All pairs collected`)
 
   // Travel all bridges
