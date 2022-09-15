@@ -59,9 +59,18 @@ const Moonbeam = new EvmChain(
 const Karura = new SubstrateChain(
   'Karura',
   'wss://karura.api.onfinality.io/public-ws',
-  null,
-  null,
-  null
+  {
+    id: 'KAR',
+    name: 'KAR',
+    symbol: 'KAR',
+    decimals: 12,
+  },
+  {
+    id: 'KUSD',
+    name: 'KUSD',
+    symbol: 'KUSD',
+    decimals: 12,
+  }
 )
 
 async function initializeBridges() {
