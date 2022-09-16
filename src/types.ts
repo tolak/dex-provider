@@ -112,10 +112,6 @@ export interface IPair {
   reserve0: string
   // Liquidity(balance of pair address) of quote trading token
   reserve1: string
-  // Price of token0 represented by USD
-  token0Price: string
-  // Price of token1 represented by USD
-  token1Price: string
   // Total volume USD
   volumeUSD: Option<string>
   // Capacity of token0, represented by USD
@@ -138,6 +134,10 @@ export interface IPair {
   getPrices: () => [Option<string>, Option<string>]
   // Return total fee paid according to current trading status, dynamic fetch&calculate from blockchain
   getFee: (token: IToken) => Option<string>
+  // Return trading rate of token0
+  getRate0: () => string
+  // Return trading rate of token1
+  getRate1: () => string
 }
 
 export interface IToken {

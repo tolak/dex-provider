@@ -1,4 +1,5 @@
 import {IToken, IPair, Option} from './types'
+import {Decimal} from 'decimal.js'
 
 export class Pair implements IPair {
   id: string
@@ -6,8 +7,6 @@ export class Pair implements IPair {
   token1: IToken
   reserve0: string
   reserve1: string
-  token0Price: string
-  token1Price: string
   volumeUSD: Option<string>
   capcity0: Option<string>
   capcity1: Option<string>
@@ -20,8 +19,6 @@ export class Pair implements IPair {
     token1: IToken,
     reserve0: string,
     reserve1: string,
-    token0Price: string,
-    token1Price: string,
     volumeUSD: Option<string>,
     capcity0: Option<string>,
     capcity1: Option<string>,
@@ -33,8 +30,6 @@ export class Pair implements IPair {
     this.token1 = token1
     this.reserve0 = reserve0
     this.reserve1 = reserve1
-    this.token0Price = token0Price
-    this.token1Price = token1Price
     this.volumeUSD = volumeUSD
     this.capcity0 = capcity0
     this.capcity1 = capcity1
@@ -49,8 +44,6 @@ export class Pair implements IPair {
       this.token0,
       this.reserve1,
       this.reserve0,
-      this.token1Price,
-      this.token0Price,
       this.volumeUSD,
       this.capcity1,
       this.capcity0,
@@ -69,12 +62,20 @@ export class Pair implements IPair {
   }
 
   getPrices(): [Option<string>, Option<string>] {
-    //
-    return [this.token0Price, this.token1Price]
+    // TODO: fetch from blockchain or set manually
+    return [null, null]
   }
 
   getFee(token: IToken): Option<string> {
     // TODO: fetch from blockchain or set manually
     return null
+  }
+
+  getRate0(): string {
+    return new Decimal(this.reserve1).div(new Decimal(this.reserve0)).toFixed(6)
+  }
+
+  getRate1(): string {
+    return new Decimal(this.reserve0).div(new Decimal(this.reserve1)).toFixed(6)
   }
 }
