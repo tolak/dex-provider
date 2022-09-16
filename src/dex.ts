@@ -79,8 +79,6 @@ export class AcalaDexExtension extends DexExtension {
                   }
                   token0Amount
                   token1Amount
-                  token0Price
-                  token1Price
                   tradeVolumeUSD
                   feeRate
                 }
@@ -101,8 +99,6 @@ export class AcalaDexExtension extends DexExtension {
                 raw.token1,
                 raw.token0Amount,
                 raw.token1Amount,
-                raw.token0Price,
-                raw.token1Price,
                 raw.tradeVolumeUSD,
                 null,
                 null,
@@ -145,8 +141,6 @@ export class AcalaDexExtension extends DexExtension {
                         }
                         token0Amount
                         token1Amount
-                        token0Price
-                        token1Price
                         tradeVolumeUSD
                         feeRate
                     }
@@ -166,8 +160,6 @@ export class AcalaDexExtension extends DexExtension {
                 raw.token1,
                 raw.token0Amount,
                 raw.token1Amount,
-                raw.token0Price,
-                raw.token1Price,
                 raw.tradeVolumeUSD,
                 null,
                 null,
@@ -263,8 +255,6 @@ export class UniswapV2Extension extends DexExtension {
                 }
                 reserve0
                 reserve1
-                token0Price
-                token1Price
                 volumeUSD
               }
             }
@@ -280,8 +270,6 @@ export class UniswapV2Extension extends DexExtension {
                 raw.token1,
                 raw.reserve0,
                 raw.reserve1,
-                raw.token0Price,
-                raw.token1Price,
                 raw.volumeUSD,
                 null,
                 null,
@@ -325,8 +313,6 @@ export class UniswapV2Extension extends DexExtension {
                         }
                         reserve0
                         reserve1
-                        token0Price
-                        token1Price
                         volumeUSD
                     }
                 }
@@ -341,8 +327,6 @@ export class UniswapV2Extension extends DexExtension {
                 raw.token1,
                 raw.reserve0,
                 raw.reserve1,
-                raw.token0Price,
-                raw.token1Price,
                 raw.volumeUSD,
                 null,
                 null,
@@ -390,8 +374,6 @@ export class UniswapV2Extension extends DexExtension {
                           }
                           reserve0
                           reserve1
-                          token0Price
-                          token1Price
                           volumeUSD
                       }
                   }
@@ -406,8 +388,6 @@ export class UniswapV2Extension extends DexExtension {
                 raw.token1,
                 raw.reserve0,
                 raw.reserve1,
-                raw.token0Price,
-                raw.token1Price,
                 raw.volumeUSD,
                 null,
                 null,
@@ -550,13 +530,13 @@ export class Dex<Ex extends DexExtension> implements IDex {
     let cap: Option<string> = null
     // Calculate capacity of pair
     if (pair.token0.id.toLowerCase() === chainNativeWrap.id.toLowerCase()) {
-      cap = new Decimal(nativeWrapUSDTPair.token1Price)
+      cap = new Decimal(nativeWrapUSDTPair.getRate0())
         .mul(new Decimal(pair.reserve0))
         .toFixed(6)
     } else if (
       pair.token1.id.toLowerCase() === chainNativeWrap.id.toLowerCase()
     ) {
-      cap = new Decimal(nativeWrapUSDTPair.token1Price)
+      cap = new Decimal(nativeWrapUSDTPair.getRate0())
         .mul(new Decimal(pair.reserve1))
         .toFixed(6)
     } else if (pair.token0.id.toLowerCase() === chainUSDT.id.toLowerCase()) {
@@ -566,9 +546,16 @@ export class Dex<Ex extends DexExtension> implements IDex {
     } else {
       const token0NativewrapPair = this.getPair(pair.token0, chainNativeWrap)
       if (token0NativewrapPair !== null) {
-        cap = new Decimal(token0NativewrapPair.token1Price)
-          .mul(new Decimal(nativeWrapUSDTPair.token1Price))
+        cap = new Decimal(token0NativewrapPair.getRate0())
+          .mul(new Decimal(nativeWrapUSDTPair.getRate0()))
           .mul(new Decimal(pair.reserve0))
+          .toFixed(6)
+      }
+      const token1NativewrapPair = this.getPair(pair.token1, chainNativeWrap)
+      if (token1NativewrapPair !== null) {
+        cap = new Decimal(token1NativewrapPair.getRate0())
+          .mul(new Decimal(nativeWrapUSDTPair.getRate0()))
+          .mul(new Decimal(pair.reserve1))
           .toFixed(6)
       }
     }
@@ -586,7 +573,7 @@ export class Dex<Ex extends DexExtension> implements IDex {
         reserve1: Number(pair.reserve1),
         token1Id: pair.token1.id,
         cap: Number(this.getCapcities(pair)),
-        rate: Number(pair.token1Price),
+        rate: Number(pair.getRate1()),
         dex: this.name,
       })
     }
